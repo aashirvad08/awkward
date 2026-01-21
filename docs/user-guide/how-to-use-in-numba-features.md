@@ -194,3 +194,35 @@ But the context managers, `with builder.record()` and `with builder.list()`, don
 ## Overriding behavior with `ak.behavior`
 
 Just as behaviors can be customized for Awkward Arrays in general, they can be customized in the compiled context as well. See the last section of the {obj}`ak.behavior` reference for details.
+
+## GPU backend and cuDF compatibility
+
+### Supported cuDF versions
+
+Awkward Array’s GPU backend relies on internal cuDF APIs that may change between releases.
+As a result, only a limited range of cuDF versions are known to be compatible with the current GPU backend.
+Using cuDF versions outside the tested range may lead to runtime errors, particularly for list-like data.
+
+### CI vs local GPU environments
+
+GPU-related failures may appear in continuous integration (CI) environments but not reproduce locally.
+This can occur due to differences in CUDA drivers, cuDF builds, or RAPIDS versions between CI and user systems.
+Users encountering GPU-only failures are encouraged to verify that their local cuDF version matches the tested CI configuration.
+
+### Known limitations
+
+Some cuDF constructors, such as `ListColumn`, have exhibited incompatible behavior across cuDF releases.
+These differences are not always documented upstream and can affect Awkward’s GPU backend when relying on specific constructor signatures.
+
+### Typical error symptoms
+
+When using unsupported cuDF versions, users may encounter errors such as:
+- unexpected constructor argument mismatches,
+- `TypeError` or `RuntimeError` during GPU-backed operations,
+- failures that appear only in GPU-enabled CI environments.
+
+### Known issues and references
+
+A discussion of cuDF constructor compatibility across GPU CI environments can be found in:
+- PR #4478
+
