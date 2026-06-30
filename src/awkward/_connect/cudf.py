@@ -196,12 +196,12 @@ def _buf_to_cupy(buf: Any, dtype: str) -> cp.ndarray:
 
 def _data_to_cupy(col: plc.Column, dtype: str) -> cp.ndarray:
     _, _, cp = _ensure_deps()
-    buffer = _get_attr_or_call(col, "data_buffer")
+    buffer = _get_attr_or_call(col, "data_buffer") or _get_attr_or_call(col, "data")
     offset = _get_offset(col)
     size = _get_size(col)
     length = offset + size
 
-    if buffer is None:
+    if buffer is None or buffer.nbytes == 0:
         if size == 0:
             return cp.empty(0, dtype=dtype)
         if _get_null_count(col) == size:
@@ -244,7 +244,9 @@ def _offsets_to_index(offsets_col: plc.Column | None, parent_col: plc.Column) ->
     if offsets_col is None:
         offsets = cp.zeros(fallback_length, dtype="int32")
     else:
-        buffer = _get_attr_or_call(offsets_col, "data_buffer")
+        buffer = _get_attr_or_call(offsets_col, "data_buffer") or _get_attr_or_call(
+            offsets_col, "data"
+        )
         if buffer is None:
             if _get_size(offsets_col) == 0:
                 offsets = cp.zeros(fallback_length, dtype="int32")
@@ -393,7 +395,10 @@ def _column_to_layout(col: plc.Column) -> Content:
 
 
 def _series_to_layout(series: Any) -> Content:
-    return _column_to_layout(_to_pylibcudf_column(series))
+    lay = _column_to_layout(_to_pylibcudf_column(series))
+    if fields := series.dtype.fields:
+        lay._fields = list(fields)
+    return lay
 
 
 def _dataframe_to_layout(dataframe: Any) -> Content:
