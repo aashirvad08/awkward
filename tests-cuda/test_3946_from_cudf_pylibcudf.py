@@ -152,7 +152,7 @@ def test_from_cudf_respects_arrow_offset():
 def test_from_cudf_zero_copy():
     series = cudf.Series([10, 20, 30, 40], dtype=np.int32)
     result = ak.from_cudf(series)
-    assert result.layout.data.data == _ptr(series)
+    assert result.layout.data.data.ptr == _ptr(series)
 
 
 def test_from_cudf_highlevel_false():

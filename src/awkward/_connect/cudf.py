@@ -396,8 +396,14 @@ def _column_to_layout(col: plc.Column) -> Content:
 
 def _series_to_layout(series: Any) -> Content:
     lay = _column_to_layout(_to_pylibcudf_column(series))
-    if fields := series.dtype.fields:
-        lay._fields = list(fields)
+    # apply field names
+    fields = getattr(series.dtype, "fields", None)
+    if fields:
+        lay0 = lay
+        # account for outer index/mask types
+        while not isinstance(lay0, RecordArray):
+            lay0 = lay0._content
+        lay0._fields = list(fields)
     return lay
 
 
