@@ -1274,8 +1274,6 @@ class NumpyArray(NumpyMeta, Content):
         )
 
     def _to_cudf(self, cudf: Any, mask: Content | None, length: int):
-        from packaging.version import parse as parse_version
-
         cupy = Cupy.instance()
 
         assert self._backend.nplike.known_data
@@ -1309,8 +1307,11 @@ class NumpyArray(NumpyMeta, Content):
             m = cupy.packbits(cupy.asarray(mask), bitorder="little")
             if m.nbytes % 64:
                 m = cupy.resize(m, ((m.nbytes // 64) + 1) * 64)
-            result = data.set_mask(cudf.core.buffer.as_buffer(m))
-            data = result if result is not None else data
+            null_count = int(
+                length - int(cupy.unpackbits(m, bitorder="little")[:length].sum())
+            )
+            data = data.set_mask(cudf.core.buffer.as_buffer(m), null_count)
+
         return data
 
     def _to_backend_array(self, allow_missing, backend):
