@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from awkward._dispatch import high_level_function
 from awkward._layout import wrap_layout
 
 __all__ = ("from_cudf",)
 
 
-@high_level_function()
 def from_cudf(obj, *, highlevel=True, behavior=None, attrs=None):
     """
     Args:
@@ -32,7 +30,7 @@ def from_cudf(obj, *, highlevel=True, behavior=None, attrs=None):
     See also #ak.to_cudf, #ak.from_cupy, and #ak.from_dlpack.
     """
     # Dispatch
-    yield (obj,)
+    # yield (obj,)
 
     # Implementation
     return _impl(obj, highlevel, behavior, attrs)
