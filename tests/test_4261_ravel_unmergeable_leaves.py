@@ -43,6 +43,7 @@ def test_int_and_string(operation, data):
         ("datetime64[s]", "timedelta64[s]"),
         ("datetime64[s]", "datetime64[ms]"),
         ("timedelta64[s]", "timedelta64[ms]"),
+        ("timedelta64[as]", "timedelta64[m]"),
         ("int64", "timedelta64[ms]"),
     ],
 )
@@ -55,6 +56,21 @@ def test_unmergeable_dtypes(operation, a, b):
         ValueError, match=re.escape(f"cannot merge types {b} and {a} into")
     ):
         operation(_record(b, a))
+
+
+@pytest.mark.parametrize("operation", OPERATIONS)
+def test_timedelta_value_too_large_for_finer_unit(operation):
+    array = ak.Array(
+        {
+            "x": np.array([2**62], dtype="timedelta64[s]"),
+            "y": np.array([0], dtype="timedelta64[ns]"),
+        }
+    )
+    with pytest.raises(
+        ValueError,
+        match=re.escape("cannot merge types timedelta64[s] and timedelta64[ns] into"),
+    ):
+        operation(array)
 
 
 @pytest.mark.parametrize("operation", OPERATIONS)

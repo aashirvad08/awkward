@@ -122,10 +122,6 @@ def _would_raise_from_known_issue(a: ak.Array, kwargs: Kwargs) -> bool:
     in `known_issues`, and this function applies any option
     conditions — for `ak.ravel`, none.
     """
-    if known_issues.has_issue_4278(a):
-        return True
-    if known_issues.has_issue_4280(a):
-        return True
     if known_issues.has_issue_4283(a):
         return True
     return False
